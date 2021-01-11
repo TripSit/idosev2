@@ -31,7 +31,6 @@
 from supybot import utils, plugins, ircutils, callbacks, world, conf, log
 from supybot.commands import *
 
-
 from num2words import num2words
 import dateutil.parser
 import json
@@ -44,6 +43,7 @@ import pytz
 
 try:
     from supybot.i18n import PluginInternationalization
+
     _ = PluginInternationalization('Tripsit')
 except ImportError:
     # Placeholder that allows to run the plugin on a bot
@@ -51,7 +51,6 @@ except ImportError:
     _ = lambda x: x
 
 filename = conf.supybot.directories.data.dirize("Tripsit.db")
-
 
 url_drug = "http://tripbot.tripsit.me/api/tripsit/getDrug"
 url_combo = "http://tripbot.tripsit.me/api/tripsit/getInteraction"
@@ -71,6 +70,7 @@ METHODS = {
 
     "smoked": ["Smoked"]
 }
+
 
 class Tripsit(callbacks.Plugin):
     """Harm-Reduction tools from tripsit's tripbot and the tripsitwiki"""
@@ -150,7 +150,11 @@ class Tripsit(callbacks.Plugin):
             else:
                 irc.reply(re)
         else:
-            irc.reply("Unknown combo (that doesn't mean it's safe). Known combos: lsd, mushrooms, dmt, mescaline, dox, nbomes, 2c-x, 2c-t-x, amt, 5-meo-xxt, cannabis, ketamine, mxe, dxm, pcp, nitrous, amphetamines, mdma, cocaine, caffeine, alcohol, ghb/gbl, opioids, tramadol, benzodiazepines, maois, ssris.")
+            irc.reply(
+                "Unknown combo (that doesn't mean it's safe). Known combos: lsd, mushrooms, dmt, mescaline, dox, "
+                "nbomes, 2c-x, 2c-t-x, amt, 5-meo-xxt, cannabis, ketamine, mxe, dxm, pcp, nitrous, amphetamines, "
+                "mdma, cocaine, caffeine, alcohol, ghb/gbl, opioids, tramadol, benzodiazepines, maois, ssris."
+            )
 
     combo = wrap(combo, [("something"), ("something")])
 
@@ -166,10 +170,11 @@ class Tripsit(callbacks.Plugin):
             if nick in self.db:
                 self.db[nick]['timezone'] = timezone
             else:
-                self.db[nick] = {'timezone': timezone }
+                self.db[nick] = {'timezone': timezone}
             irc.replySuccess()
         except pytz.UnknownTimeZoneError:
             irc.error(_('Unknown timezone'), Raise=True)
+
     set = wrap(set, ["something"])
 
     @wrap(["private", getopts({'ago': 'something'}), "something", "something", optional("something")])
@@ -193,8 +198,8 @@ class Tripsit(callbacks.Plugin):
                 method_keys += methods
 
             if 'formatted_onset' in drug:
-                match = list(set(method_keys)&
-                    set(drug["formatted_onset"].keys()))
+                match = list(set(method_keys) &
+                             set(drug["formatted_onset"].keys()))
                 if match:
                     onset = drug["formatted_onset"][match[0]]
                     found_method = True
@@ -223,7 +228,7 @@ class Tripsit(callbacks.Plugin):
                 dose_td = datetime.timedelta(hours=int(ago[0:2]), minutes=int(ago[2:4]))
                 dose_td_s = dose_td.total_seconds()
                 time = time - dose_td
-            doseLog = {'time': time, 'dose': dose, 'drug': name, 'method': method }
+            doseLog = {'time': time, 'dose': dose, 'drug': name, 'method': method}
             doses = self.db[nick].get('doses')
             if doses:
                 doses.append(doseLog)
@@ -240,7 +245,7 @@ class Tripsit(callbacks.Plugin):
                 dose_td = datetime.timedelta(hours=int(ago[0:2]), minutes=int(ago[2:4]))
                 dose_td_s = dose_td.total_seconds()
                 time = time - dose_td
-            doseLog = {'time': time, 'dose': dose, 'drug': name, 'method': method }
+            doseLog = {'time': time, 'dose': dose, 'drug': name, 'method': method}
             doses = [doseLog]
             self.db[nick] = {'timezone': timezone, 'doses': doses}
 
@@ -249,7 +254,8 @@ class Tripsit(callbacks.Plugin):
             if onset is not None:
                 re += utils.str.format(". You should start feeling effects %s from now", onset)
         else:
-            re = utils.str.format("You dosed %s of %s at %s, %s ; %T ago", dose, drug_and_method, str(time), timezone, dose_td.total_seconds())
+            re = utils.str.format("You dosed %s of %s at %s, %s ; %T ago", dose, drug_and_method, str(time), timezone,
+                                  dose_td.total_seconds())
             if onset is not None:
                 re += utils.str.format(". You should have/will start feeling effects %s from/after dosing", onset)
         irc.reply(re)
@@ -281,14 +287,16 @@ class Tripsit(callbacks.Plugin):
             since_dose_seconds = since_dose.total_seconds()
             if history:
                 history = num2words(history, to='ordinal')
-                re = utils.str.format("Your %i last dose was %s of %s via %s at %s %s, %T ago", history, dose, drug, method, str(dose_time), timezone, since_dose_seconds)
+                re = utils.str.format("Your %i last dose was %s of %s via %s at %s %s, %T ago", history, dose, drug,
+                                      method, str(dose_time), timezone, since_dose_seconds)
             else:
-                re = utils.str.format("You last dosed %s of %s via %s at %s %s, %T ago", dose, drug, method, str(dose_time), timezone, since_dose_seconds)
+                re = utils.str.format("You last dosed %s of %s via %s at %s %s, %T ago", dose, drug, method,
+                                      str(dose_time), timezone, since_dose_seconds)
             irc.reply(re)
         else:
             irc.error(f'No doses saved for {nick}')
 
-Class = Tripsit
 
+Class = Tripsit
 
 # vim:set shiftwidth=4 softtabstop=4 expandtab textwidth=79:

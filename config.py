@@ -29,8 +29,10 @@
 ###
 
 from supybot import conf, registry
+
 try:
     from supybot.i18n import PluginInternationalization
+
     _ = PluginInternationalization('Tripsit')
 except:
     # Placeholder that allows to run the plugin on a bot
